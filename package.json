@@ -28,7 +28,8 @@
     "react-dropzone": "^3.7.3",
     "redux-file-upload": "0.0.16",
     "redux-saga": "^0.11.0",
-    "stackblur-canvas": "^1.2.1"
+    "stackblur-canvas": "^1.2.1",
+    "unsplash-js": "^4.2.0"
   },
   "devDependencies": {
     "auto-reload-brunch": "^2.0.0",

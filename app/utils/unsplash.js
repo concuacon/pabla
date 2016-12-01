@@ -1,24 +1,12 @@
 // TODO: query a real API
 // import Unsplash from 'unsplash-api';
 var $ = require('jquery');
-// import * as api from './api';
-// // create a new api client object:
-// const myApiClient = new api.Client({ applicationId: '95722cffe093a7581855d7816015f2dad5f83c7259362b829c44f8c61c13d76d', callbackUrl: undefined, secret: undefined });
-// var api = "https://api.unsplash.com/photos/?client_id=95722cffe093a7581855d7816015f2dad5f83c7259362b829c44f8c61c13d76d&per_page=30&page=10";
-// var arr;
-// $.get(api, function (data) {
-//   arr=[];
-//  for(var i=0; i< data.length;i++){
-//   var item = {url: data[i].urls.full}
-//   arr.push(item);
-//  }
-//  console.log(arr);
-// });
-// var result = $.get(api);
-// console.log(result);
+
 var jsonfile = require('jsonfile')
- 
+
 var file = '/public/data.json'
+// var photo = new UnsplashPhoto();
+// photo.fetch();
 
 
 const images = [
@@ -35,7 +23,7 @@ const images = [
   { url: 'https://images.unsplash.com/9/fields.jpg?ixlib=rb-0.3.5&q=80&fm=jpg', tags: ['field', 'stack'] }
 ];
 
- 
+
 // jsonfile.writeFile(file, images, function (err) {
 //   console.error(err)
 // })

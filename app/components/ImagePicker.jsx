@@ -1,7 +1,7 @@
 import React from 'react';
 import Option from './Option';
 
-import { FileUpload } from 'redux-file-upload';
+// import { FileUpload } from 'redux-file-upload';
 
 // import {Uploader} from 'react-file-upload';
 // import {DropUploader} from 'react-file-upload';
@@ -13,7 +13,7 @@ export default React.createClass({
     selected: React.PropTypes.shape({ url: React.PropTypes.string }),
     onSelect: React.PropTypes.func
   },
- 
+
   handleSelect(image) {
     this.props.onSelect && this.props.onSelect(image);
   },
@@ -40,16 +40,6 @@ export default React.createClass({
           <input type="file" ref="file" className="upload" accept="image/*" onChange={this.handleFile} />
       </div>
 
-      <FileUpload
-        allowedFileTypes={['jpg', 'pdf']}
-        data={{ type: 'picture' }}
-        dropzoneId="fileUpload"
-        url="https:/url.org/api/docs/upload"
-      >
-        <button>
-          Click or drag here
-        </button>
-      </FileUpload>
     </div>;
   }
 });
