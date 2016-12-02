@@ -10,7 +10,7 @@ const colors = [
   '#71c318'
 ];
 
-const fonts = ['Arial', 'Georgia', 'Helvetica', 'Trebuchet MS', 'Electrick', 'Angelina'];
+const fonts = ['Arial', 'Georgia', 'Helvetica', 'Trebuchet MS'];
 const fontSizes = [8, 10, 12, 14, 16, 18, 20, 22, 26, 32, 36, 42, 48, 54];
 
 export default React.createClass({
@@ -30,6 +30,7 @@ export default React.createClass({
   updateFont() {
     const val = this.refs.font.value;
     this.props.onFontChange(val);
+    console.log(val);
   },
 
   updateFontSize() {

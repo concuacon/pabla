@@ -1,11 +1,6 @@
 import React from 'react';
 import Option from './Option';
-
-// import { FileUpload } from 'redux-file-upload';
-
-// import {Uploader} from 'react-file-upload';
-// import {DropUploader} from 'react-file-upload';
-// import style from 'react-file-upload/css/upload.less'
+// import { FileUpload } from 'redux-file-upload'
 
 export default React.createClass({
   propTypes: {
@@ -20,6 +15,14 @@ export default React.createClass({
 
   render() {
     const selected = this.props.selected || {};
+    const FileUpload = require('react-fileupload');
+    const options = {
+      baseUrl: '/public/upload',
+      query: {
+        warrior: 'fight'
+      }
+    }
+
     return <div>
       <div className="ImagePicker">
         {this.props.images.map(image => {

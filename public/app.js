@@ -19608,6 +19608,74 @@ module.exports = warning;
   })();
 });
 
+require.register("form-urlencoded/form-urlencoded.js", function(exports, require, module) {
+  require = __makeRelativeRequire(require, {}, "form-urlencoded");
+  (function() {
+    // Filename: formurlencoded.js
+// Timestamp: 2016.01.18-15:36:37 (last modified)
+// Author(s): Bumblehead (www.bumblehead.com), JBlashill (james@blashill.com)
+//
+// http://www.w3.org/TR/html5/forms.html#url-encoded-form-data
+// input: {one:1,two:2} return: '[one]=1&[two]=2'
+
+var formurlencoded = module.exports = function (data, opts) {
+  opts = typeof opts === 'object' ? opts : {};
+
+  function encode (value) {
+    return String(value)
+      .replace(/[^ !'()~\*]*/g, encodeURIComponent)
+      .replace(/ /g, '+')
+      .replace(/[!'()~\*]/g, function (ch) {
+        return '%' + ch.charCodeAt().toString(16).slice(-2).toUpperCase();
+      });
+  }
+
+  function keys (obj) {
+    var keys = Object.keys(obj);
+
+    return opts.sorted ? keys.sort() : keys;
+  }
+
+  function filterjoin (arr) {
+    return arr.filter(function (e) { return e; }).join('&');
+  }
+
+  function objnest (name, obj) {
+    return filterjoin(keys(obj).map(function (key) {
+      return nest(name + '[' + key + ']', obj[key]);
+    }));
+  }
+
+  function arrnest (name, arr) {
+    return filterjoin(arr.map(function (elem) {
+      return nest(name + '[]', elem);
+    }));
+  }
+
+  function nest (name, value) {
+    var type = typeof value,
+        f = null;
+
+    if (value === f) {
+      f = opts.ignorenull ? f : encode(name) + '=' + f;
+    } else if (/string|number|boolean/.test(type)) {
+      f = encode(name) + '=' + encode(value);
+    } else if (Array.isArray(value)) {
+      f = arrnest(name, value);
+    } else if (type === 'object') {
+      f = objnest(name, value);
+    }
+
+    return f;
+  }
+
+  return filterjoin(keys(data).map(function (key) {
+    return nest(key, data[key]);
+  }));
+};
+  })();
+});
+
 require.register("graceful-fs/fs.js", function(exports, require, module) {
   require = __makeRelativeRequire(require, {}, "graceful-fs");
   (function() {
@@ -31575,12 +31643,210 @@ process.umask = function() { return 0; };
   })();
 });
 
+require.register("querystring-es3/decode.js", function(exports, require, module) {
+  require = __makeRelativeRequire(require, {}, "querystring-es3");
+  (function() {
+    // Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+'use strict';
+
+// If obj.hasOwnProperty has been overridden, then calling
+// obj.hasOwnProperty(prop) will break.
+// See: https://github.com/joyent/node/issues/1707
+function hasOwnProperty(obj, prop) {
+  return Object.prototype.hasOwnProperty.call(obj, prop);
+}
+
+module.exports = function(qs, sep, eq, options) {
+  sep = sep || '&';
+  eq = eq || '=';
+  var obj = {};
+
+  if (typeof qs !== 'string' || qs.length === 0) {
+    return obj;
+  }
+
+  var regexp = /\+/g;
+  qs = qs.split(sep);
+
+  var maxKeys = 1000;
+  if (options && typeof options.maxKeys === 'number') {
+    maxKeys = options.maxKeys;
+  }
+
+  var len = qs.length;
+  // maxKeys <= 0 means that we should not limit keys count
+  if (maxKeys > 0 && len > maxKeys) {
+    len = maxKeys;
+  }
+
+  for (var i = 0; i < len; ++i) {
+    var x = qs[i].replace(regexp, '%20'),
+        idx = x.indexOf(eq),
+        kstr, vstr, k, v;
+
+    if (idx >= 0) {
+      kstr = x.substr(0, idx);
+      vstr = x.substr(idx + 1);
+    } else {
+      kstr = x;
+      vstr = '';
+    }
+
+    k = decodeURIComponent(kstr);
+    v = decodeURIComponent(vstr);
+
+    if (!hasOwnProperty(obj, k)) {
+      obj[k] = v;
+    } else if (isArray(obj[k])) {
+      obj[k].push(v);
+    } else {
+      obj[k] = [obj[k], v];
+    }
+  }
+
+  return obj;
+};
+
+var isArray = Array.isArray || function (xs) {
+  return Object.prototype.toString.call(xs) === '[object Array]';
+};
+  })();
+});
+
+require.register("querystring-es3/encode.js", function(exports, require, module) {
+  require = __makeRelativeRequire(require, {}, "querystring-es3");
+  (function() {
+    // Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+'use strict';
+
+var stringifyPrimitive = function(v) {
+  switch (typeof v) {
+    case 'string':
+      return v;
+
+    case 'boolean':
+      return v ? 'true' : 'false';
+
+    case 'number':
+      return isFinite(v) ? v : '';
+
+    default:
+      return '';
+  }
+};
+
+module.exports = function(obj, sep, eq, name) {
+  sep = sep || '&';
+  eq = eq || '=';
+  if (obj === null) {
+    obj = undefined;
+  }
+
+  if (typeof obj === 'object') {
+    return map(objectKeys(obj), function(k) {
+      var ks = encodeURIComponent(stringifyPrimitive(k)) + eq;
+      if (isArray(obj[k])) {
+        return map(obj[k], function(v) {
+          return ks + encodeURIComponent(stringifyPrimitive(v));
+        }).join(sep);
+      } else {
+        return ks + encodeURIComponent(stringifyPrimitive(obj[k]));
+      }
+    }).join(sep);
+
+  }
+
+  if (!name) return '';
+  return encodeURIComponent(stringifyPrimitive(name)) + eq +
+         encodeURIComponent(stringifyPrimitive(obj));
+};
+
+var isArray = Array.isArray || function (xs) {
+  return Object.prototype.toString.call(xs) === '[object Array]';
+};
+
+function map (xs, f) {
+  if (xs.map) return xs.map(f);
+  var res = [];
+  for (var i = 0; i < xs.length; i++) {
+    res.push(f(xs[i], i));
+  }
+  return res;
+}
+
+var objectKeys = Object.keys || function (obj) {
+  var res = [];
+  for (var key in obj) {
+    if (Object.prototype.hasOwnProperty.call(obj, key)) res.push(key);
+  }
+  return res;
+};
+  })();
+});
+
+require.register("querystring-es3/index.js", function(exports, require, module) {
+  require = __makeRelativeRequire(require, {}, "querystring-es3");
+  (function() {
+    'use strict';
+
+exports.decode = exports.parse = require('./decode');
+exports.encode = exports.stringify = require('./encode');
+  })();
+});
+
 require.register("react-dom/index.js", function(exports, require, module) {
   require = __makeRelativeRequire(require, {}, "react-dom");
   (function() {
     'use strict';
 
 module.exports = require('react/lib/ReactDOM');
+  })();
+});
+
+require.register("react-fileupload/dist/main.min.js", function(exports, require, module) {
+  require = __makeRelativeRequire(require, {}, "react-fileupload");
+  (function() {
+    !function(e,t){"object"==typeof exports&&"object"==typeof module?module.exports=t(require("react")):"function"==typeof define&&define.amd?define(["react"],t):"object"==typeof exports?exports["react-fileupload"]=t(require("react")):e["react-fileupload"]=t(e.React)}(this,function(__WEBPACK_EXTERNAL_MODULE_1__){return function(e){function t(i){if(o[i])return o[i].exports;var a=o[i]={exports:{},id:i,loaded:!1};return e[i].call(a.exports,a,a.exports,t),a.loaded=!0,a.exports}var o={};return t.m=e,t.c=o,t.p="",t(0)}([function(module,exports,__webpack_require__){"use strict";var _extends=Object.assign||function(e){for(var t=1;t<arguments.length;t++){var o=arguments[t];for(var i in o)Object.prototype.hasOwnProperty.call(o,i)&&(e[i]=o[i])}return e},_typeof="function"==typeof Symbol&&"symbol"==typeof Symbol.iterator?function(e){return typeof e}:function(e){return e&&"function"==typeof Symbol&&e.constructor===Symbol?"symbol":typeof e},React=__webpack_require__(1),emptyFunction=function(){},currentIEID=0,IEFormGroup=[!0],xhrList=[],currentXHRID=0,PT=React.PropTypes,FileUpload=React.createClass({displayName:"FileUpload",propTypes:{options:PT.shape({baseUrl:PT.string.isRequired,param:PT.oneOfType([PT.object,PT.func]),dataType:PT.string,chooseAndUpload:PT.bool,paramAddToField:PT.oneOfType([PT.object,PT.func]),wrapperDisplay:PT.string,timeout:PT.number,accept:PT.string,multiple:PT.bool,numberLimit:PT.oneOfType([PT.number,PT.func]),fileFieldName:PT.oneOfType([PT.string,PT.func]),withCredentials:PT.bool,requestHeaders:PT.object,tag:PT.string,userAgent:PT.string,disabledIEChoose:PT.oneOfType([PT.bool,PT.func]),_withoutFileUpload:PT.bool,filesToUpload:PT.arrayOf(PT.object),textBeforeFiles:PT.bool,beforeChoose:PT.func,chooseFile:PT.func,beforeUpload:PT.func,doUpload:PT.func,uploading:PT.func,uploadSuccess:PT.func,uploadError:PT.func,uploadFail:PT.func,onabort:PT.func}).isRequired,style:PT.object,className:PT.string},_updateProps:function(e){var t=this;this.isIE=!(this.checkIE()<0||this.checkIE()>=10);var o=e.options;this.baseUrl=o.baseUrl,this.param=o.param,this.chooseAndUpload=o.chooseAndUpload||!1,this.paramAddToField=o.paramAddToField||void 0,this.dataType="json",o.dataType&&"text"==o.dataType.toLowerCase()&&(this.dataType="text"),this.wrapperDisplay=o.wrapperDisplay||"inline-block",this.timeout="number"==typeof o.timeout&&o.timeout>0?o.timeout:0,this.accept=o.accept||"",this.multiple=o.multiple||!1,this.numberLimit=o.numberLimit||!1,this.fileFieldName=o.fileFieldName||!1,this.withCredentials=o.withCredentials||!1,this.requestHeaders=o.requestHeaders||!1,this.beforeChoose=o.beforeChoose||emptyFunction,this.chooseFile=o.chooseFile||emptyFunction,this.beforeUpload=o.beforeUpload||emptyFunction,this.doUpload=o.doUpload||emptyFunction,this.uploading=o.uploading||emptyFunction,this.uploadSuccess=o.uploadSuccess||emptyFunction,this.uploadError=o.uploadError||emptyFunction,this.uploadFail=o.uploadFail||emptyFunction,this.onabort=o.onabort||emptyFunction,this.files=o.files||this.files||!1,this.disabledIEChoose=o.disabledIEChoose||!1,this._withoutFileUpload=o._withoutFileUpload||!1,this.filesToUpload=o.filesToUpload||[],this.textBeforeFiles=o.textBeforeFiles||!1,this.filesToUpload.length&&!this.isIE&&this.filesToUpload.forEach(function(e){t.files=[e],t.commonUpload()});var i=void 0,a=void 0,s=0,r=[],n=[],l=[];this.chooseAndUpload?React.Children.forEach(e.children,function(e){e&&"chooseAndUpload"==e.ref?(i=e,s++):0==s?r.push(e):1==s?n.push(e):""}):React.Children.forEach(e.children,function(e){e&&"chooseBtn"==e.ref?(i=e,s++):e&&"uploadBtn"==e.ref?(a=e,s++):0==s?r.push(e):1==s?n.push(e):l.push(e)}),this.setState({chooseBtn:i,uploadBtn:a,before:r,middle:n,after:l})},commonChooseFile:function(){var e=this.beforeChoose();1!=e&&void 0!=e||this.refs.ajax_upload_file_input.click()},commonChange:function(e){var t=void 0;e.dataTransfer?t=e.dataTransfer.files:e.target?t=e.target.files:"";var o="function"==typeof this.numberLimit?this.numberLimit():this.numberLimit;if(this.multiple&&o&&t.length>o){for(var i={},a=0;a<o;a++)i[a]=t[a];i.length=o,t=i}this.files=t,this.chooseFile(t),this.chooseAndUpload&&this.commonUpload()},commonUpload:function(){var e=this,t=this.files.length&&this.files[0].mill||(new Date).getTime(),o=this.beforeUpload(this.files,t);if(1!=o&&void 0!=o&&"object"!=("undefined"==typeof o?"undefined":_typeof(o)))return void(this.refs.ajax_upload_file_input.value="");if(this.files){if(!this.baseUrl)throw new Error("baseUrl missing in options");var i={},a=new FormData;this.textBeforeFiles&&(a=this.appendFieldsToFormData(a)),this._withoutFileUpload||!function(){var t=_typeof(e.fileFieldName);Object.keys(e.files).forEach(function(o){if("length"!=o)if("function"==t){var i=e.files[o],s=e.fileFieldName(i);a.append(s,i)}else if("string"==t){var r=e.files[o];a.append(e.fileFieldName,r)}else{var n=e.files[o];a.append(n.name,n)}})}(),this.textBeforeFiles||(a=this.appendFieldsToFormData(a));var s=this.baseUrl,r="function"==typeof this.param?this.param(this.files):this.param,n="";r&&!function(){var e=[];r._=t,Object.keys(r).forEach(function(t){return e.push(t+"="+r[t])}),n="?"+e.join("&")}();var l=s+n,p=new XMLHttpRequest;p.open("POST",l,!0),p.withCredentials=this.withCredentials;var d=this.requestHeaders;d&&Object.keys(d).forEach(function(e){return p.setRequestHeader(e,d[e])}),this.timeout&&(p.timeout=this.timeout,p.ontimeout=function(){e.uploadError({type:"TIMEOUTERROR",message:"timeout"}),i.isTimeout=!1},i.isTimeout=!1,setTimeout(function(){i.isTimeout=!0},this.timeout)),p.onreadystatechange=function(){try{if(4==p.readyState&&p.status>=200&&p.status<400){var t="json"==e.dataType?JSON.parse(p.responseText):p.responseText;e.uploadSuccess(t)}else if(4==p.readyState){var o="json"==e.dataType?JSON.parse(p.responseText):p.responseText;e.uploadFail(o)}}catch(a){!i.isTimeout&&e.uploadError({type:"FINISHERROR",message:a.message})}},p.onerror=function(){try{var t="json"==e.dataType?JSON.parse(p.responseText):p.responseText;e.uploadError({type:"XHRERROR",message:t})}catch(o){e.uploadError({type:"XHRERROR",message:o.message})}},p.onprogress=p.upload.onprogress=function(o){e.uploading(o,t)},this._withoutFileUpload?p.send(null):p.send(a),xhrList.push(p);var u=xhrList.length-1;currentXHRID=u,p.onabort=function(){return e.onabort(t,u)},this.doUpload(this.files,t,currentXHRID),this.refs.ajax_upload_file_input.value=""}},appendFieldsToFormData:function(e){var t="function"==typeof this.paramAddToField?this.paramAddToField():this.paramAddToField;return t&&Object.keys(t).map(function(o){return e.append(o,t[o])}),e},IEBeforeChoose:function(e){var t=this.beforeChoose();1!=t&&void 0!=t&&e.preventDefault()},IEChooseFile:function(e){this.fileName=e.target.value.substring(e.target.value.lastIndexOf("\\")+1),this.chooseFile(this.fileName),this.chooseAndUpload&&this.IEUpload()!==!1&&document.getElementById("ajax_upload_file_form_"+this.IETag+currentIEID).submit(),e.target.blur()},IEUpload:function(e){function t(){clearInterval(m);try{s.uploadSuccess(s.IECallback(s.dataType,_))}catch(e){s.uploadError(e)}finally{var t=document.getElementById("ajax_upload_hidden_input_"+s.IETag+_);t.outerHTML=t.outerHTML}}var o=this,i=(new Date).getTime(),a=this.beforeUpload(this.fileName,i);if(!this.fileName||1!=a&&void 0!=a)return e&&e.preventDefault(),!1;var s=this,r=this.baseUrl,n="function"==typeof this.param?this.param(this.fileName):this.param,l="";if(n){var p=[];n._=i,void 0===n.ie&&(n.ie="true");for(var d in n)void 0!=n[d]&&p.push(d+"="+n[d]);l="?"+p.join("&")}var u=r+l;document.getElementById("ajax_upload_file_form_"+this.IETag+currentIEID).setAttribute("action",u);var c=this.fakeProgress(),h=0,f=0,m=setInterval(function(){h=c(h),o.uploading({loaded:h,total:100},i),++f>=150&&clearInterval(m)},200),_=currentIEID;window.attachEvent?document.getElementById("ajax_upload_file_frame_"+this.IETag+_).attachEvent("onload",t):document.getElementById("ajax_upload_file_frame_"+this.IETag+_).addEventListener("load",t),this.doUpload(this.fileName,i),IEFormGroup[currentIEID]=!1},IECallback:function IECallback(dataType,frameId){IEFormGroup[frameId]=!0;var frame=document.getElementById("ajax_upload_file_frame_"+this.IETag+frameId),resp={},content=frame.contentWindow?frame.contentWindow.document.body:frame.contentDocument.document.body;if(!content)throw new Error("Your browser does not support async upload");try{resp.responseText=content.innerHTML||"null innerHTML",resp.json=JSON?JSON.parse(resp.responseText):eval("("+resp.responseText+")")}catch(e){if(e.message&&e.message.indexOf("Unexpected token")>=0){if(resp.responseText.indexOf("{")>=0){var msg=resp.responseText.substring(resp.responseText.indexOf("{"),resp.responseText.lastIndexOf("}")+1);return JSON?JSON.parse(msg):eval("("+msg+")")}return{type:"FINISHERROR",message:e.message}}throw e}return"json"==dataType?resp.json:resp.responseText},forwardChoose:function(){return!this.isIE&&void this.commonChooseFile()},fowardRemoveFile:function(e){this.files=e(this.files)},filesToUpload:function(e){this.isIE||(this.files=e,this.commonUpload())},abort:function(e){void 0===e?xhrList[currentXHRID].abort():xhrList[e].abort()},checkIE:function(){var e=this.userAgent,t=e.indexOf("MSIE");return t<0?-1:parseFloat(e.substring(t+5,e.indexOf(";",t)))},fakeProgress:function(){var e=6,t=.3,o=98,i=.2;return function(a){var s=a;return s>=o?s:(s+=e,e-=t,e<i&&(e=i),s)}},getUserAgent:function(){var e=this.props.options.userAgent,t="undefined"!=typeof navigator;if(!t&&!e)throw new Error("`options.userAgent` must be set rendering react-fileuploader in situations when `navigator` is not defined in the global namespace. (on the server, for example)");return t?navigator.userAgent:e},getInitialState:function(){return{chooseBtn:{},uploadBtn:{},before:[],middle:[],after:[]}},componentWillMount:function(){this.userAgent=this.getUserAgent(),this.isIE=!(this.checkIE()<0||this.checkIE()>=10);var e=this.props.options&&this.props.options.tag;this.IETag=e?e+"_":"",this._updateProps(this.props)},componentDidMount:function(){},componentWillReceiveProps:function(e){this._updateProps(e)},render:function(){return this._packRender()},_packRender:function(){var e="";if(this.isIE)e=this._multiIEForm();else{var t={accept:this.accept,multiple:this.multiple};e=React.createElement("div",{className:this.props.className,style:this.props.style},this.state.before,React.createElement("div",{onClick:this.commonChooseFile,style:{overflow:"hidden",postion:"relative",display:this.wrapperDisplay}},this.state.chooseBtn),this.state.middle,React.createElement("div",{onClick:this.commonUpload,style:{overflow:"hidden",postion:"relative",display:this.chooseAndUpload?"none":this.wrapperDisplay}},this.state.uploadBtn),this.state.after,React.createElement("input",_extends({type:"file",name:"ajax_upload_file_input",ref:"ajax_upload_file_input",style:{display:"none"},onChange:this.commonChange},t)))}return e},_multiIEForm:function(){function e(e,t){if(!IEFormGroup[t]||!o){var a=IEFormGroup[t],s={position:"absolute",left:"-30px",top:0,zIndex:"50",fontSize:"80px",width:"200px",opacity:0,filter:"alpha(opacity=0)"},r={accept:this.accept,disabled:i},n=React.createElement("input",_extends({type:"file",name:"ajax_upload_hidden_input_"+t,id:"ajax_upload_hidden_input_"+t,ref:"ajax_upload_hidden_input_"+t,onChange:this.IEChooseFile,onClick:this.IEBeforeChoose,style:s},r));t=""+this.IETag+t,e.push(React.createElement("form",{id:"ajax_upload_file_form_"+t,method:"post",target:"ajax_upload_file_frame_"+t,key:"ajax_upload_file_form_"+t,encType:"multipart/form-data",ref:"form_"+t,onSubmit:this.IEUpload,style:{display:a?"block":"none"}},this.state.before,React.createElement("div",{style:{overflow:"hidden",position:"relative",display:"inline-block"}},this.state.chooseBtn,n),this.state.middle,React.createElement("div",{style:{overflow:"hidden",position:"relative",display:this.chooseAndUpload?"none":this.wrapperDisplay}},this.state.uploadBtn,React.createElement("input",{type:"submit",style:{position:"absolute",left:0,top:0,fontSize:"50px",width:"200px",opacity:0}})),this.state.after)),e.push(React.createElement("iframe",{id:"ajax_upload_file_frame_"+t,name:"ajax_upload_file_frame_"+t,key:"ajax_upload_file_frame_"+t,className:"ajax_upload_file_frame",style:{display:"none",width:0,height:0,margin:0,border:0}}))}}for(var t=[],o=!1,i="function"==typeof this.disabledIEChoose?this.disabledIEChoose():this.disabledIEChoose,a=0;a<IEFormGroup.length;a++)e.call(this,t,a),IEFormGroup[a]&&!o&&(o=!0,currentIEID=a),a==IEFormGroup.length-1&&!o&&IEFormGroup.push(!0);return React.createElement("div",{className:this.props.className,style:this.props.style,id:"react-file-uploader"},t)}});module.exports=FileUpload},function(e,t){e.exports=__WEBPACK_EXTERNAL_MODULE_1__}])});
   })();
 });
 
@@ -57440,6 +57706,821 @@ Library.prototype.test = function(obj, type) {
   })();
 });
 
+require.register("unsplash-js/lib/constants/index.js", function(exports, require, module) {
+  require = __makeRelativeRequire(require, {}, "unsplash-js");
+  (function() {
+    "use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+var API_URL = exports.API_URL = "https://api.unsplash.com";
+var API_VERSION = exports.API_VERSION = "v1";
+var OAUTH_AUTHORIZE_URL = exports.OAUTH_AUTHORIZE_URL = "https://unsplash.com/oauth/authorize";
+var OAUTH_TOKEN_URL = exports.OAUTH_TOKEN_URL = "https://unsplash.com/oauth/token";
+  })();
+});
+
+require.register("unsplash-js/lib/methods/auth.js", function(exports, require, module) {
+  require = __makeRelativeRequire(require, {}, "unsplash-js");
+  (function() {
+    "use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = auth;
+
+var _querystring = require("querystring");
+
+var _querystring2 = _interopRequireDefault(_querystring);
+
+var _constants = require("../constants");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function auth() {
+  var _this = this;
+
+  return {
+    getAuthenticationUrl: function getAuthenticationUrl() {
+      var scope = arguments.length <= 0 || arguments[0] === undefined ? ["public"] : arguments[0];
+
+      var querystrings = _querystring2.default.stringify({
+        client_id: _this._applicationId,
+        redirect_uri: _this._callbackUrl,
+        response_type: "code",
+        scope: scope.length > 1 ? scope.join("+") : scope.toString()
+      });
+
+      return decodeURIComponent(_constants.OAUTH_AUTHORIZE_URL + "?" + querystrings);
+    },
+
+    userAuthentication: function userAuthentication(code) {
+      var url = _constants.OAUTH_TOKEN_URL;
+
+      return _this.request({
+        url: url,
+        method: "POST",
+        body: {
+          client_id: _this._applicationId,
+          client_secret: _this._secret,
+          redirect_uri: _this._callbackUrl,
+          grant_type: "authorization_code",
+          code: code
+        },
+        oauth: true
+      });
+    },
+
+    setBearerToken: function setBearerToken(accessToken) {
+      if (accessToken) {
+        _this._bearerToken = accessToken;
+      }
+    }
+  };
+}
+  })();
+});
+
+require.register("unsplash-js/lib/methods/categories.js", function(exports, require, module) {
+  require = __makeRelativeRequire(require, {}, "unsplash-js");
+  (function() {
+    "use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = categories;
+function categories() {
+  var _this = this;
+
+  return {
+    listCategories: function listCategories() {
+      var url = "/categories";
+
+      return _this.request({
+        url: url,
+        method: "GET"
+      });
+    },
+
+    category: function category(id) {
+      var url = "/categories/" + id;
+
+      return _this.request({
+        url: url,
+        method: "GET"
+      });
+    },
+
+    categoryPhotos: function categoryPhotos(id, page, perPage) {
+      var url = "/categories/" + id + "/photos";
+
+      var query = {
+        page: page,
+        per_page: perPage
+      };
+
+      return _this.request({
+        url: url,
+        method: "GET",
+        query: query
+      });
+    }
+  };
+}
+  })();
+});
+
+require.register("unsplash-js/lib/methods/collections.js", function(exports, require, module) {
+  require = __makeRelativeRequire(require, {}, "unsplash-js");
+  (function() {
+    "use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = collections;
+function collections() {
+  var _this = this;
+
+  return {
+    listCollections: function listCollections() {
+      var page = arguments.length <= 0 || arguments[0] === undefined ? 1 : arguments[0];
+      var perPage = arguments.length <= 1 || arguments[1] === undefined ? 10 : arguments[1];
+
+      var url = "/collections";
+
+      var query = {
+        page: page,
+        per_page: perPage
+      };
+
+      return _this.request({
+        url: url,
+        method: "GET",
+        query: query
+      });
+    },
+
+    listCuratedCollections: function listCuratedCollections() {
+      var page = arguments.length <= 0 || arguments[0] === undefined ? 1 : arguments[0];
+      var perPage = arguments.length <= 1 || arguments[1] === undefined ? 10 : arguments[1];
+
+      var url = "/collections/curated";
+      var query = {
+        page: page,
+        per_page: perPage
+      };
+
+      return _this.request({
+        url: url,
+        method: "GET",
+        query: query
+      });
+    },
+
+    listFeaturedCollections: function listFeaturedCollections() {
+      var page = arguments.length <= 0 || arguments[0] === undefined ? 1 : arguments[0];
+      var perPage = arguments.length <= 1 || arguments[1] === undefined ? 10 : arguments[1];
+
+      var url = "/collections/featured";
+      var query = {
+        page: page,
+        per_page: perPage
+      };
+
+      return _this.request({
+        url: url,
+        method: "GET",
+        query: query
+      });
+    },
+
+    getCollection: collection.bind(this, false),
+
+    getCuratedCollection: collection.bind(this, true),
+
+    getCuratedCollectionPhotos: collectionPhotos.bind(this, true),
+
+    getCollectionPhotos: collectionPhotos.bind(this, false),
+
+    createCollection: createUpdateCollection.bind(this, null),
+
+    updateCollection: createUpdateCollection.bind(this),
+
+    deleteCollection: function deleteCollection(id) {
+      var url = "/collections/" + id;
+
+      return _this.request({
+        url: url,
+        method: "DELETE"
+      });
+    },
+
+    addPhotoToCollection: function addPhotoToCollection(collectionId, photoId) {
+      var url = "/collections/" + collectionId + "/add";
+
+      return _this.request({
+        url: url,
+        method: "POST",
+        body: {
+          photo_id: photoId
+        }
+      });
+    },
+
+    removePhotoFromCollection: function removePhotoFromCollection(collectionId, photoId) {
+      var url = "/collections/" + collectionId + "/remove?photo_id=" + photoId;
+
+      return _this.request({
+        url: url,
+        method: "DELETE"
+      });
+    }
+  };
+}
+
+function collection(isCurated, id) {
+  var url = isCurated ? "/collections/curated/" + id : "/collections/" + id;
+
+  return this.request({
+    url: url,
+    method: "GET"
+  });
+}
+
+function collectionPhotos(isCurated, id) {
+  var page = arguments.length <= 2 || arguments[2] === undefined ? 1 : arguments[2];
+  var perPage = arguments.length <= 3 || arguments[3] === undefined ? 10 : arguments[3];
+  var orderBy = arguments.length <= 4 || arguments[4] === undefined ? "latest" : arguments[4];
+
+  var url = isCurated ? "/collections/curated/" + id + "/photos" : "/collections/" + id + "/photos";
+
+  var query = {
+    page: page,
+    per_page: perPage,
+    order_by: orderBy
+  };
+
+  return this.request({
+    url: url,
+    method: "GET",
+    query: query
+  });
+}
+
+function createUpdateCollection(id, title, description, isPrivate) {
+  var url = id ? "/collections/" + id : "/collections";
+  var body = {
+    title: title,
+    description: description,
+    "private": isPrivate
+  };
+
+  return this.request({
+    url: url,
+    method: id ? "PUT" : "POST",
+    body: body
+  });
+}
+  })();
+});
+
+require.register("unsplash-js/lib/methods/currentUser.js", function(exports, require, module) {
+  require = __makeRelativeRequire(require, {}, "unsplash-js");
+  (function() {
+    "use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = currentUser;
+function currentUser() {
+  var _this = this;
+
+  return {
+    profile: function profile() {
+      var url = "/me";
+
+      return _this.request({
+        url: url,
+        method: "GET"
+      });
+    },
+
+    updateProfile: function updateProfile(options) {
+      var endpointUrl = "/me";
+      var username = options.username;
+      var firstName = options.firstName;
+      var lastName = options.lastName;
+      var email = options.email;
+      var url = options.url;
+      var location = options.location;
+      var bio = options.bio;
+      var instagramUsername = options.instagramUsername;
+
+      var body = {
+        username: username,
+        first_name: firstName,
+        last_name: lastName,
+        email: email,
+        url: url,
+        location: location,
+        bio: bio,
+        instagram_username: instagramUsername
+      };
+
+      Object.keys(body).forEach(function (key) {
+        if (!body[key]) {
+          delete body[key];
+        }
+      });
+
+      return _this.request({
+        url: endpointUrl,
+        method: "PUT",
+        body: body
+      });
+    }
+  };
+}
+  })();
+});
+
+require.register("unsplash-js/lib/methods/photos.js", function(exports, require, module) {
+  require = __makeRelativeRequire(require, {}, "unsplash-js");
+  (function() {
+    "use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = photos;
+function photos() {
+  var _this = this;
+
+  return {
+    listPhotos: function listPhotos() {
+      var page = arguments.length <= 0 || arguments[0] === undefined ? 1 : arguments[0];
+      var perPage = arguments.length <= 1 || arguments[1] === undefined ? 10 : arguments[1];
+      var orderBy = arguments.length <= 2 || arguments[2] === undefined ? "latest" : arguments[2];
+
+      var url = "/photos";
+      var query = {
+        page: page,
+        per_page: perPage,
+        order_by: orderBy
+      };
+
+      return _this.request({
+        url: url,
+        method: "GET",
+        query: query
+      });
+    },
+
+    listCuratedPhotos: function listCuratedPhotos() {
+      var page = arguments.length <= 0 || arguments[0] === undefined ? 1 : arguments[0];
+      var perPage = arguments.length <= 1 || arguments[1] === undefined ? 10 : arguments[1];
+      var orderBy = arguments.length <= 2 || arguments[2] === undefined ? "latest" : arguments[2];
+
+      var url = "/photos/curated";
+      var query = {
+        page: page,
+        per_page: perPage,
+        order_by: orderBy
+      };
+
+      return _this.request({
+        url: url,
+        method: "GET",
+        query: query
+      });
+    },
+
+    searchPhotos: function searchPhotos(q) {
+      var category = arguments.length <= 1 || arguments[1] === undefined ? [""] : arguments[1];
+      var page = arguments.length <= 2 || arguments[2] === undefined ? 1 : arguments[2];
+      var perPage = arguments.length <= 3 || arguments[3] === undefined ? 10 : arguments[3];
+
+      var url = "/photos/search";
+      var query = {
+        query: q,
+        category: category.length > 1 ? category.join(",") : category.toString(),
+        page: page,
+        per_page: perPage
+      };
+
+      return _this.request({
+        url: url,
+        method: "GET",
+        query: query
+      });
+    },
+
+    getPhoto: function getPhoto(id, width, height, rectangle) {
+      var url = "/photos/" + id;
+      var query = {
+        w: width,
+        h: height,
+        rect: rectangle
+      };
+
+      return _this.request({
+        url: url,
+        method: "GET",
+        query: query
+      });
+    },
+
+    getPhotoStats: function getPhotoStats(id) {
+      var url = "/photos/" + id + "/stats";
+
+      return _this.request({
+        url: url,
+        method: "GET"
+      });
+    },
+
+    getRandomPhoto: function getRandomPhoto() {
+      var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+
+      var url = "/photos/random";
+      var collections = options.collections || [];
+
+      var query = {
+        category: options.category,
+        featured: options.featured,
+        username: options.username,
+        collections: collections.join(),
+        query: options.query,
+        w: options.width,
+        h: options.height,
+        c: options.cacheBuster || new Date().getTime() // Avoid ajax response caching
+      };
+
+      Object.keys(query).forEach(function (key) {
+        if (!query[key]) {
+          delete query[key];
+        }
+      });
+
+      return _this.request({
+        url: url,
+        method: "GET",
+        query: query
+      });
+    },
+
+    uploadPhoto: function uploadPhoto(photo) {
+      if (!_this._bearerToken) {
+        throw new Error("Requires a bearerToken to be set.");
+      }
+
+      var url = "/photos";
+
+      return _this.request({
+        url: url,
+        method: "POST",
+        body: {
+          photo: photo
+        }
+      });
+    },
+
+    likePhoto: function likePhoto(id) {
+      if (!_this._bearerToken) {
+        throw new Error("Requires a bearerToken to be set.");
+      }
+
+      var url = "/photos/" + id + "/like";
+
+      return _this.request({
+        url: url,
+        method: "POST"
+      });
+    },
+
+    unlikePhoto: function unlikePhoto(id) {
+      if (!_this._bearerToken) {
+        throw new Error("Requires a bearerToken to be set.");
+      }
+
+      var url = "/photos/" + id + "/like";
+
+      return _this.request({
+        url: url,
+        method: "DELETE"
+      });
+    }
+  };
+}
+  })();
+});
+
+require.register("unsplash-js/lib/methods/search.js", function(exports, require, module) {
+  require = __makeRelativeRequire(require, {}, "unsplash-js");
+  (function() {
+    "use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = search;
+function search() {
+  return {
+    all: searcher.bind(this, "/search"),
+
+    photos: searcher.bind(this, "/search/photos"),
+
+    users: searcher.bind(this, "/search/users"),
+
+    collections: searcher.bind(this, "/search/collections")
+  };
+}
+
+function searcher(url) {
+  var keyword = arguments.length <= 1 || arguments[1] === undefined ? "" : arguments[1];
+  var page = arguments.length <= 2 || arguments[2] === undefined ? 1 : arguments[2];
+
+  var query = {
+    query: keyword,
+    page: page
+  };
+
+  return this.request({
+    url: url,
+    method: "GET",
+    query: query
+  });
+}
+  })();
+});
+
+require.register("unsplash-js/lib/methods/stats.js", function(exports, require, module) {
+  require = __makeRelativeRequire(require, {}, "unsplash-js");
+  (function() {
+    "use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = stats;
+function stats() {
+  var _this = this;
+
+  return {
+    total: function total() {
+      var url = "/stats/total";
+
+      return _this.request({
+        url: url,
+        method: "GET"
+      });
+    }
+  };
+}
+  })();
+});
+
+require.register("unsplash-js/lib/methods/users.js", function(exports, require, module) {
+  require = __makeRelativeRequire(require, {}, "unsplash-js");
+  (function() {
+    "use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = users;
+function users() {
+  var _this = this;
+
+  return {
+    profile: function profile(username) {
+      var url = "/users/" + username;
+
+      return _this.request({
+        url: url,
+        method: "GET"
+      });
+    },
+
+    photos: function photos(username) {
+      var page = arguments.length <= 1 || arguments[1] === undefined ? 1 : arguments[1];
+      var perPage = arguments.length <= 2 || arguments[2] === undefined ? 10 : arguments[2];
+      var orderBy = arguments.length <= 3 || arguments[3] === undefined ? "latest" : arguments[3];
+
+      var url = "/users/" + username + "/photos";
+      var query = {
+        page: page,
+        per_page: perPage,
+        order_by: orderBy
+      };
+
+      return _this.request({
+        url: url,
+        method: "GET",
+        query: query
+      });
+    },
+
+    likes: function likes(username) {
+      var page = arguments.length <= 1 || arguments[1] === undefined ? 1 : arguments[1];
+      var perPage = arguments.length <= 2 || arguments[2] === undefined ? 10 : arguments[2];
+      var orderBy = arguments.length <= 3 || arguments[3] === undefined ? "latest" : arguments[3];
+
+      var url = "/users/" + username + "/likes";
+      var query = {
+        page: page,
+        per_page: perPage,
+        order_by: orderBy
+      };
+
+      return _this.request({
+        url: url,
+        method: "GET",
+        query: query
+      });
+    },
+
+    collections: function collections(username) {
+      var page = arguments.length <= 1 || arguments[1] === undefined ? 1 : arguments[1];
+      var perPage = arguments.length <= 2 || arguments[2] === undefined ? 10 : arguments[2];
+
+      var url = "/users/" + username + "/collections";
+      var query = {
+        page: page,
+        per_page: perPage
+      };
+
+      return _this.request({
+        url: url,
+        method: "GET",
+        query: query
+      });
+    }
+  };
+}
+  })();
+});
+
+require.register("unsplash-js/lib/unsplash.js", function(exports, require, module) {
+  require = __makeRelativeRequire(require, {}, "unsplash-js");
+  (function() {
+    "use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+exports.toJson = toJson;
+
+var _constants = require("./constants");
+
+var _utils = require("./utils");
+
+var _auth = require("./methods/auth");
+
+var _auth2 = _interopRequireDefault(_auth);
+
+var _currentUser = require("./methods/currentUser");
+
+var _currentUser2 = _interopRequireDefault(_currentUser);
+
+var _users = require("./methods/users");
+
+var _users2 = _interopRequireDefault(_users);
+
+var _photos = require("./methods/photos");
+
+var _photos2 = _interopRequireDefault(_photos);
+
+var _categories = require("./methods/categories");
+
+var _categories2 = _interopRequireDefault(_categories);
+
+var _collections = require("./methods/collections");
+
+var _collections2 = _interopRequireDefault(_collections);
+
+var _search = require("./methods/search");
+
+var _search2 = _interopRequireDefault(_search);
+
+var _stats = require("./methods/stats");
+
+var _stats2 = _interopRequireDefault(_stats);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Unsplash = function () {
+  function Unsplash(options) {
+    _classCallCheck(this, Unsplash);
+
+    this._apiUrl = options.apiUrl || _constants.API_URL;
+    this._apiVersion = options.apiVersion || _constants.API_VERSION;
+    this._applicationId = options.applicationId;
+    this._secret = options.secret;
+    this._callbackUrl = options.callbackUrl;
+    this._bearerToken = options.bearerToken;
+
+    this.auth = _auth2.default.bind(this)();
+    this.currentUser = _currentUser2.default.bind(this)();
+    this.users = _users2.default.bind(this)();
+    this.photos = _photos2.default.bind(this)();
+    this.categories = _categories2.default.bind(this)();
+    this.collections = _collections2.default.bind(this)();
+    this.search = _search2.default.bind(this)();
+    this.stats = _stats2.default.bind(this)();
+  }
+
+  _createClass(Unsplash, [{
+    key: "request",
+    value: function request(requestOptions) {
+      var _buildFetchOptions$bi = _utils.buildFetchOptions.bind(this)(requestOptions);
+
+      var url = _buildFetchOptions$bi.url;
+      var options = _buildFetchOptions$bi.options;
+
+
+      return fetch(url, options);
+    }
+  }]);
+
+  return Unsplash;
+}();
+
+exports.default = Unsplash;
+function toJson(res) {
+  return res.json();
+}
+  })();
+});
+
+require.register("unsplash-js/lib/utils/index.js", function(exports, require, module) {
+  require = __makeRelativeRequire(require, {}, "unsplash-js");
+  (function() {
+    "use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+exports.formUrlEncode = formUrlEncode;
+exports.buildFetchOptions = buildFetchOptions;
+
+var _querystring = require("querystring");
+
+var _formUrlencoded = require("form-urlencoded");
+
+var _formUrlencoded2 = _interopRequireDefault(_formUrlencoded);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function formUrlEncode(body) {
+  return (0, _formUrlencoded2.default)(body);
+}
+
+function buildFetchOptions(options) {
+  var method = options.method;
+  var query = options.query;
+  var oauth = options.oauth;
+  var body = options.body;
+
+  var url = oauth === true ? options.url : "" + this._apiUrl + options.url;
+  var headers = _extends({}, options.headers, {
+    "Accept-Version": this._apiVersion,
+    "Authorization": this._bearerToken ? "Bearer " + this._bearerToken : "Client-ID " + this._applicationId
+  });
+
+  if (body) {
+    headers["Content-Type"] = "application/x-www-form-urlencoded";
+  }
+
+  if (query) {
+    url = decodeURIComponent(url + "?" + (0, _querystring.stringify)(query));
+  }
+
+  return {
+    url: url,
+    options: {
+      method: method,
+      headers: headers,
+      body: method !== "GET" && body ? formUrlEncode(body) : undefined
+    }
+  };
+}
+  })();
+});
+
 require.register("util-deprecate/browser.js", function(exports, require, module) {
   require = __makeRelativeRequire(require, {}, "util-deprecate");
   (function() {
@@ -58962,11 +60043,7 @@ var _Option2 = _interopRequireDefault(_Option);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-// import { FileUpload } from 'redux-file-upload';
-
-// import {Uploader} from 'react-file-upload';
-// import {DropUploader} from 'react-file-upload';
-// import style from 'react-file-upload/css/upload.less'
+// import { FileUpload } from 'redux-file-upload'
 
 exports.default = _react2.default.createClass({
   displayName: 'ImagePicker',
@@ -58984,6 +60061,14 @@ exports.default = _react2.default.createClass({
     var _this = this;
 
     var selected = this.props.selected || {};
+    var FileUpload = require('react-fileupload');
+    var options = {
+      baseUrl: '/public/upload',
+      query: {
+        warrior: 'fight'
+      }
+    };
+
     return _react2.default.createElement(
       'div',
       null,
@@ -59575,7 +60660,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 var colors = ['white', 'black', '#444', '#007fff', '#ffb300', '#71c318'];
 
-var fonts = ['Arial', 'Georgia', 'Helvetica', 'Trebuchet MS', 'Electrick', 'Angelina'];
+var fonts = ['Arial', 'Georgia', 'Helvetica', 'Trebuchet MS'];
 var fontSizes = [8, 10, 12, 14, 16, 18, 20, 22, 26, 32, 36, 42, 48, 54];
 
 exports.default = _react2.default.createClass({
@@ -59597,6 +60682,7 @@ exports.default = _react2.default.createClass({
   updateFont: function updateFont() {
     var val = this.refs.font.value;
     this.props.onFontChange(val);
+    console.log(val);
   },
   updateFontSize: function updateFontSize() {
     var val = parseInt(this.refs.fontSize.value, 10);
@@ -61227,26 +62313,73 @@ exports.default = TextEditor;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.searchImages = exports.getPopularImages = undefined;
+
+var _unsplashJs = require('unsplash-js');
+
+var _unsplashJs2 = _interopRequireDefault(_unsplashJs);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
 // TODO: query a real API
 // import Unsplash from 'unsplash-api';
 var $ = require('jquery');
 
 var jsonfile = require('jsonfile');
+// var unsplash = require('unsplash-api');
 
 var file = '/public/data.json';
 // var photo = new UnsplashPhoto();
 // photo.fetch();
+var unsplash = new _unsplashJs2.default({
+  applicationId: "44f861574db65daf9d0a5138f021e9283fd5449f27a6c690d791eb50a5c37eef",
+  secret: "13ec03ee18974be10fec679dee285d637f158fb78ab28095efc5c98de5616afd",
+  callbackUrl: "http://localhost:3333"
+});
+var authenticationUrl = unsplash.auth.getAuthenticationUrl(["public", "read_user", "write_user", "read_photos", "write_photos"]);
+// location.assign(authenticationUrl);
+// unsplash.photos.listPhotos(2, 15, "latest")
+//   .then(toJson)
+//   .then(json => {
+//     console.log(json);
+//   });
+var arr = [];
+// unsplash.photos.listPhotos(2, 30, "latest")
+//   .then(toJson)
+//   .then(json => {
+//     json.map((item) => {
+//       let tags = item.user.location;
+//       console.log(tags);
+//     })
+//     localStorage.setItem("jsons", JSON.stringify(json));
+//   });
+//   var jsons = JSON.parse(localStorage.getItem("jsons"));
+//   console.log(jsons);
+// for(let i = 1; i <= 10; i++){
+//   unsplash.photos.listPhotos(i, 30, "latest")
+//   .then(toJson)
+//   .then(json => {
+//     json.map((item) => {
+//       // console.log(item);
+//       let url = item.urls.raw+"?fm=jpg";
+//       let tag = item.user.location.toString();
+//       tag ? tag.slipt(',') : "";
+//       let val = {url:url,tags: [tag]};
+//       arr.push(val);      
+//     });    
+//     localStorage.setItem("arr", JSON.stringify(arr));
+//   });
+// }
 
-
+var arrImages = JSON.parse(localStorage.getItem("arr"));
+console.log(arrImages);
+// localStorage.clear();
+// const images = arrImages;
 var images = [{ url: 'https://images.unsplash.com/photo-1461016951828-c09537329b3a?fm=jpg', tags: ['field', 'landscape', 'sunlight'] }, { url: 'https://images.unsplash.com/photo-1461295025362-7547f63dbaea?fm=jpg', tags: ['crops'] }, { url: 'https://images.unsplash.com/photo-1465326117523-6450112b60b2?fm=jpg', tags: ['forest', 'hill'] }, { url: 'https://images.unsplash.com/photo-1458640904116-093b74971de9?fm=jpg', tags: ['dark', 'field'] },
 //{ url: 'https://images.unsplash.com/photo-1453227588063-bb302b62f50b?fm=jpg' },
 //{ url: 'https://images.unsplash.com/photo-1451906278231-17b8ff0a8880?fm=jpg' },
 { url: 'https://images.unsplash.com/photo-1447969025943-8219c41ea47a?fm=jpg', tags: ['cat', 'kitten'] }, { url: 'https://images.unsplash.com/photo-1421749810611-438cc492b581?fm=jpg', tags: ['water', 'landscape'] }, { url: 'https://images.unsplash.com/photo-1449960238630-7e720e630019?fm=jpg', tags: ['water', 'seaside'] }, { url: 'https://images.unsplash.com/photo-1433190152045-5a94184895da?fm=jpg', tags: ['water', 'cliff'] }, { url: 'https://images.unsplash.com/9/fields.jpg?ixlib=rb-0.3.5&q=80&fm=jpg', tags: ['field', 'stack'] }];
-
-// jsonfile.writeFile(file, images, function (err) {
-//   console.error(err)
-// })
-
+console.log(images);
 var getPopularImages = exports.getPopularImages = function getPopularImages() {
   return Promise.resolve(images);
 };
@@ -61284,12 +62417,15 @@ require.alias("chai-immutable/chai-immutable.js", "chai-immutable");
 require.alias("core-util-is/lib/util.js", "core-util-is");
 require.alias("es6-promise/dist/es6-promise.js", "es6-promise");
 require.alias("events/events.js", "events");
+require.alias("form-urlencoded/form-urlencoded.js", "form-urlencoded");
 require.alias("graceful-fs/graceful-fs.js", "graceful-fs");
 require.alias("inherits/inherits_browser.js", "inherits");
 require.alias("invariant/browser.js", "invariant");
 require.alias("jquery/dist/jquery.js", "jquery");
 require.alias("process/browser.js", "process");
+require.alias("querystring-es3/index.js", "querystring");
 require.alias("react/react.js", "react");
+require.alias("react-fileupload/dist/main.min.js", "react-fileupload");
 require.alias("react-redux/lib/index.js", "react-redux");
 require.alias("readable-stream/readable.js", "readable-stream");
 require.alias("redux/lib/index.js", "redux");
@@ -61298,6 +62434,7 @@ require.alias("stackblur-canvas/src/stackblur.js", "stackblur-canvas");
 require.alias("stream-browserify/index.js", "stream");
 require.alias("string_decoder/index.js", "string_decoder");
 require.alias("util/util.js", "sys");
+require.alias("unsplash-js/lib/unsplash.js", "unsplash-js");
 require.alias("util/util.js", "util");
 require.alias("util-deprecate/browser.js", "util-deprecate");
 require.alias("util/node_modules/inherits/inherits_browser.js", "util/node_modules/inherits");

@@ -1,14 +1,63 @@
 // TODO: query a real API
 // import Unsplash from 'unsplash-api';
 var $ = require('jquery');
-
-var jsonfile = require('jsonfile')
+import Unsplash, { toJson } from 'unsplash-js';
+var jsonfile = require('jsonfile');
+// var unsplash = require('unsplash-api');
 
 var file = '/public/data.json'
 // var photo = new UnsplashPhoto();
 // photo.fetch();
+const unsplash = new Unsplash({
+  applicationId: "44f861574db65daf9d0a5138f021e9283fd5449f27a6c690d791eb50a5c37eef",
+  secret: "13ec03ee18974be10fec679dee285d637f158fb78ab28095efc5c98de5616afd",
+  callbackUrl: "http://localhost:3333"
+});
+const authenticationUrl = unsplash.auth.getAuthenticationUrl([
+  "public",
+  "read_user",
+  "write_user",
+  "read_photos",
+  "write_photos"
+]);
+// location.assign(authenticationUrl);
+// unsplash.photos.listPhotos(2, 15, "latest")
+//   .then(toJson)
+//   .then(json => {
+//     console.log(json);
+//   });
+let arr = [];
+// unsplash.photos.listPhotos(2, 30, "latest")
+//   .then(toJson)
+//   .then(json => {
+//     json.map((item) => {
+//       let tags = item.user.location;
+//       console.log(tags);
+//     })
+//     localStorage.setItem("jsons", JSON.stringify(json));
+//   });
+//   var jsons = JSON.parse(localStorage.getItem("jsons"));
+//   console.log(jsons);
+// for(let i = 1; i <= 10; i++){
+//   unsplash.photos.listPhotos(i, 30, "latest")
+//   .then(toJson)
+//   .then(json => {
+//     json.map((item) => {
+//       // console.log(item);
+//       let url = item.urls.raw+"?fm=jpg";
+//       let tag = item.user.location.toString();
+//       tag ? tag.slipt(',') : "";
+//       let val = {url:url,tags: [tag]};
+//       arr.push(val);      
+//     });    
+//     localStorage.setItem("arr", JSON.stringify(arr));
+//   });
+// }
 
-
+  var arrImages = JSON.parse(localStorage.getItem("arr"));
+  console.log(arrImages);
+  // localStorage.clear();
+  // const images = arrImages;
 const images = [
   { url: 'https://images.unsplash.com/photo-1461016951828-c09537329b3a?fm=jpg', tags: ['field', 'landscape', 'sunlight'] },
   { url: 'https://images.unsplash.com/photo-1461295025362-7547f63dbaea?fm=jpg', tags: ['crops'] },
@@ -22,12 +71,7 @@ const images = [
   { url: 'https://images.unsplash.com/photo-1433190152045-5a94184895da?fm=jpg', tags: ['water', 'cliff'] },
   { url: 'https://images.unsplash.com/9/fields.jpg?ixlib=rb-0.3.5&q=80&fm=jpg', tags: ['field', 'stack'] }
 ];
-
-
-// jsonfile.writeFile(file, images, function (err) {
-//   console.error(err)
-// })
-
+console.log(images)
 export const getPopularImages = () => Promise.resolve(images);
 
 export const searchImages = (query) => {
