@@ -1,5 +1,4 @@
 window.process = {env: { IS_BROWSER: true }};
-console.log(window.process);
 
 import * as promisePolyfill from 'es6-promise';
 promisePolyfill.polyfill();

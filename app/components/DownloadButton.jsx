@@ -9,7 +9,7 @@ export default React.createClass({
     const uri = this.props.drawing;
     const link = e.target;
     link.href = uri;
-    link.click();
+    // link.click();
   },
 
   render() {
