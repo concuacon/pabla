@@ -12,10 +12,19 @@ import textEditor from 'utils/textEditor';
 const makeBlue = (alpha) => `rgba(87, 205, 255, ${alpha})`;
 
 const FILTERS = {
+  none:['none'],
   light_contrast: ['contrast', 0.35],
   heavy_contrast: ['contrast', 0.65],
   light_blur: ['blur', 15],
-  heavy_blur: ['blur', 40]
+  heavy_blur: ['blur', 30],
+  grayscale: ['grayscale', 0],
+  sepia: ['sepia',5],
+  opacity: ['opacity', 10],
+  emboss: ['emboss',2],
+  noise: ['noise', 2],
+  invert: ['invert',0.25],
+  saturate: ['saturate',0.1],
+  brightness: ['brightness',1]
 };
 
 // TODO: make this work & use this

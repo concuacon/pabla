@@ -5,8 +5,9 @@ import {selectImage, searchImages, resetSearch, setQuery} from 'actions';
 import Card from 'components/Card';
 import SearchBar from 'components/SearchBar';
 import ImagePicker from 'components/ImagePicker';
+import UploadButton from 'components/UploadButton';
 
-const LeftSidebar = ({ query, availableImages, selectedImage, onSelectImage, onSearch, onSearchReset, onQueryChange}) => {
+const LeftSidebar = ({ drawing, query, availableImages, selectedImage, onSelectImage, onSearch, onSearchReset, onQueryChange}) => {
   return <div className="Sidebar">
     <Card title="Images">
       <SearchBar
@@ -19,6 +20,7 @@ const LeftSidebar = ({ query, availableImages, selectedImage, onSelectImage, onS
         selected={selectedImage}
         onSelect={onSelectImage} />
     </Card>
+    <UploadButton drawing={drawing} />
   </div>;
 };
 

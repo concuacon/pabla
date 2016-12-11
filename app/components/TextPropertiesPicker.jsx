@@ -10,7 +10,7 @@ const colors = [
   '#71c318'
 ];
 
-const fonts = ['Arial', 'Georgia', 'Helvetica', 'Trebuchet MS'];
+const fonts = ['Arial', 'Georgia', 'Helvetica', 'Trebuchet MS','Serif','Calibri','Courier','Brahmos','Sans-Serif','Regular'];
 const fontSizes = [8, 10, 12, 14, 16, 18, 20, 22, 26, 32, 36, 42, 48, 54];
 
 export default React.createClass({

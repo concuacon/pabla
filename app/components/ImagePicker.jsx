@@ -15,14 +15,7 @@ export default React.createClass({
 
   render() {
     const selected = this.props.selected || {};
-    const FileUpload = require('react-fileupload');
-    const options = {
-      baseUrl: '/public/upload',
-      query: {
-        warrior: 'fight'
-      }
-    }
-
+    
     return <div>
       <div className="ImagePicker">
         {this.props.images.map(image => {
@@ -37,12 +30,6 @@ export default React.createClass({
           </div>;
         })}
       </div>
-
-      <div className="fileUpload Button-upload">
-          <span>Upload Image</span>
-          <input type="file" ref="file" className="upload" accept="image/*" onChange={this.handleFile} />
-      </div>
-
     </div>;
   }
 });
