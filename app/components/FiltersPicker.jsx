@@ -12,6 +12,7 @@ export default React.createClass({
 
   render() {
     return <div>
+    <label>
       <select className="FiltersPicker" value={this.props.filter} ref="select" onChange={this.updateFilter}>
         <option value="none">None</option>
         <option value="light_contrast">Light contrast</option>
@@ -27,6 +28,7 @@ export default React.createClass({
         <option value="saturate">Saturate</option>
         <option value="brightness">Brightness</option>
       </select>
+      </label>
     </div>;
   }
 });

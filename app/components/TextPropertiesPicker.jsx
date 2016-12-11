@@ -55,15 +55,19 @@ export default React.createClass({
     return <div className="TextPropsPicker">
       <p>
         Font:
-        <select ref="font" value={font} onChange={this.updateFont}>
-          {fonts.map(s => <option key={s} value={s}>{s}</option>)}
-        </select>
+        <label>
+          <select className="StyleFont" ref="font" value={font} onChange={this.updateFont}>
+            {fonts.map(s => <option key={s} value={s}>{s}</option>)}
+          </select>
+        </label>
       </p>
       <p>
         Font size:
-        <select ref="fontSize" value={fontSize} onChange={this.updateFontSize}>
-          {fontSizes.map(s => <option key={s} value={s}>{s}</option>)}
-        </select>
+        <label>
+          <select className="StyleFontSize" ref="fontSize" value={fontSize} onChange={this.updateFontSize}>
+            {fontSizes.map(s => <option key={s} value={s}>{s}</option>)}
+          </select>
+        </label>
       </p>
 
       <div className="TextPropsPicker-style">

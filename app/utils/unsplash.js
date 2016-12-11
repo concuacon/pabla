@@ -67,3 +67,7 @@ export const searchImages = (query) => {
     });
     return Promise.resolve(search_);
 };
+//load image upload
+export const uploadImage = (img) => {
+  return Promise.resolve(img);
+}
