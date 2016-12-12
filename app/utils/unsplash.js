@@ -1,6 +1,6 @@
 // TODO: query a real API
 import Unsplash, { toJson } from 'unsplash-js';
-var jsonfile = require('jsonfile');
+// var jsonfile = require('jsonfile');
 
 const unsplash = new Unsplash({
   applicationId: "44f861574db65daf9d0a5138f021e9283fd5449f27a6c690d791eb50a5c37eef",
