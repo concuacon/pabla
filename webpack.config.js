@@ -12,6 +12,7 @@ const config = {
     path: path.join(__dirname, 'build'),
     filename: '[name].js'
   },
+  target: 'web',
   devServer: {
     historyApiFallback: true,
     hot: true,
