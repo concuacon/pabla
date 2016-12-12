@@ -35,7 +35,7 @@
     "graceful-fs": "^4.1.11",
     "immutable": "^3.8.1",
     "jquery": "^3.1.1",
-    "lodash": "^4.17.2",
+    "lodash": "~4.1.0",
     "react": "15.1.0",
     "react-dom": "15.1.0",
     "react-dropzone": "^3.7.3",
@@ -43,9 +43,7 @@
     "redux": "^3.6.0",
     "redux-saga": "^0.11.0",
     "stackblur-canvas": "^1.2.1",
-    "unsplash-js": "^4.2.0"
-  },
-  "devDependencies": {
+    "unsplash-js": "^4.2.0",
     "auto-reload-brunch": "^2.0.0",
     "autoprefixer": "^6.3.6",
     "babel-brunch": "~6.0.0",
@@ -76,5 +74,8 @@
     "webpack": "^1.13.1",
     "webpack-dev-server": "^1.14.1",
     "webpack-validator": "^2.1.2"
+  },
+  "devDependencies": {
+    
   }
 }
