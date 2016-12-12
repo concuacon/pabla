@@ -64215,31 +64215,28 @@ var ON_OVERFLOW_SLIDE = 3;
 
 var zeroBuffer = { isEmpty: _utils.kTrue, put: _utils.noop, take: _utils.noop };
 
-function ringBuffer() {
-  var limit = arguments.length <= 0 || arguments[0] === undefined ? 10 : arguments[0];
+/**
+  TODO: Need to make a more optimized implementation: e.g. Ring buffers, linked lists with Node Object pooling...
+**/
+function arrBuffer() {
+  var limit = arguments.length <= 0 || arguments[0] === undefined ? Infinity : arguments[0];
   var overflowAction = arguments[1];
 
-  var arr = new Array(limit);
-  var length = 0;
-  var pushIndex = 0;
-  var popIndex = 0;
+  var arr = [];
   return {
     isEmpty: function isEmpty() {
-      return length == 0;
+      return !arr.length;
     },
     put: function put(it) {
-      if (length < limit) {
-        arr[pushIndex] = it;
-        pushIndex = (pushIndex + 1) % limit;
-        length++;
+      if (arr.length < limit) {
+        arr.push(it);
       } else {
         switch (overflowAction) {
           case ON_OVERFLOW_THROW:
             throw new Error(BUFFER_OVERFLOW);
           case ON_OVERFLOW_SLIDE:
-            arr[pushIndex] = it;
-            pushIndex = (pushIndex + 1) % limit;
-            popIndex = pushIndex;
+            arr.shift();
+            arr.push(it);
             break;
           default:
           // DROP
@@ -64247,13 +64244,7 @@ function ringBuffer() {
       }
     },
     take: function take() {
-      if (length != 0) {
-        var it = arr[popIndex];
-        arr[popIndex] = null;
-        length--;
-        popIndex = (popIndex + 1) % limit;
-        return it;
-      }
+      return arr.shift();
     }
   };
 }
@@ -64263,13 +64254,13 @@ var buffers = exports.buffers = {
     return zeroBuffer;
   },
   fixed: function fixed(limit) {
-    return ringBuffer(limit, ON_OVERFLOW_THROW);
+    return arrBuffer(limit, ON_OVERFLOW_THROW);
   },
   dropping: function dropping(limit) {
-    return ringBuffer(limit, ON_OVERFLOW_DROP);
+    return arrBuffer(limit, ON_OVERFLOW_DROP);
   },
   sliding: function sliding(limit) {
-    return ringBuffer(limit, ON_OVERFLOW_SLIDE);
+    return arrBuffer(limit, ON_OVERFLOW_SLIDE);
   }
 };
   })();
@@ -64429,10 +64420,6 @@ function eventChannel(subscribe) {
       chan.put(input);
     }
   });
-
-  if (!_utils.is.func(unsubscribe)) {
-    throw new Error('in eventChannel: subscribe should return a function to unsubscribe');
-  }
 
   return {
     take: chan.take,
@@ -64873,11 +64860,6 @@ function forkQueue(name, mainTask, cb) {
       completed = false;
   addTask(mainTask);
 
-  function abort(err) {
-    cancelAll();
-    cb(err, true);
-  }
-
   function addTask(task) {
     tasks.push(task);
     task.cont = function (res, isErr) {
@@ -64888,7 +64870,8 @@ function forkQueue(name, mainTask, cb) {
       (0, _utils.remove)(tasks, task);
       task.cont = _utils.noop;
       if (isErr) {
-        abort(res);
+        cancelAll();
+        cb(res, true);
       } else {
         if (task === mainTask) {
           result = res;
@@ -64917,7 +64900,6 @@ function forkQueue(name, mainTask, cb) {
   return {
     addTask: addTask,
     cancelAll: cancelAll,
-    abort: abort,
     getTasks: function getTasks() {
       return tasks;
     },
@@ -65159,7 +65141,7 @@ function proc(iterator) {
       ATTENTION! calling cancel must have no effect on an already completed or cancelled effect
     **/
     var data = void 0;
-    return (
+    return(
       // Non declarative effect
       _utils.is.promise(effect) ? resolvePromise(effect, currCb) : _utils.is.iterator(effect) ? resolveIterator(effect, effectId, name, currCb)
 
@@ -65273,11 +65255,15 @@ function proc(iterator) {
     // we run the function, next we'll check if this is a generator function
     // (generator is a function that returns an iterator)
 
-    // catch synchronous failures; see #152 and #441
+    // catch synchronous failures; see #152
     try {
       result = fn.apply(context, args);
     } catch (err) {
-      error = err;
+      if (!detached) {
+        return cb(err);
+      } else {
+        error = err;
+      }
     }
 
     // A generator function: i.e. returns an iterator
@@ -65285,8 +65271,8 @@ function proc(iterator) {
       _iterator = result;
     }
 
-    // do not bubble up synchronous failures for detached forks
-    // instead create a failed task. See #152 and #441
+    // simple effect: wrap in a generator
+    // do not bubble up synchronous failures for detached forks, instead create a failed task. See #152
     else {
         _iterator = error ? (0, _utils.makeIterator)(function () {
           throw error;
@@ -65309,18 +65295,14 @@ function proc(iterator) {
 
     _asap2.default.suspend();
     var task = proc(_iterator, subscribe, dispatch, getState, options, effectId, fn.name, detached ? null : _utils.noop);
-    if (detached) {
-      cb(task);
-    } else {
+    if (!detached) {
       if (_iterator._isRunning) {
         taskQueue.addTask(task);
-        cb(task);
       } else if (_iterator._error) {
-        taskQueue.abort(_iterator._error);
-      } else {
-        cb(task);
+        return cb(_iterator._error, true);
       }
     }
+    cb(task);
     _asap2.default.flush();
     // Fork effects are non cancellables
   }
@@ -65821,14 +65803,11 @@ function autoInc() {
 var kThrow = function kThrow(err) {
   throw err;
 };
-var kReturn = function kReturn(value) {
-  return { value: value, done: true };
-};
 function makeIterator(next) {
   var thro = arguments.length <= 1 || arguments[1] === undefined ? kThrow : arguments[1];
   var name = arguments.length <= 2 || arguments[2] === undefined ? '' : arguments[2];
 
-  var iterator = { name: name, next: next, throw: thro, return: kReturn };
+  var iterator = { name: name, next: next, throw: thro };
   if (typeof Symbol !== 'undefined') {
     iterator[Symbol.iterator] = function () {
       return iterator;
