@@ -4,8 +4,7 @@
   "author": "concuacon",
   "version": "0.0.1",
   "engines": {
-    "node": "~4.2.0",
-    "npm": "~3.5.0"
+    "node": "7.2.1"
   },
   "cacheDirectories": [
     "node_modules",
@@ -21,7 +20,8 @@
     "start": "brunch watch --server",
     "prod": "brunch build --production",
     "test": "mocha --compilers js:babel-core/register --require ./test/test_helper.js  --recursive",
-    "build": "webpack --progress --watch"
+    "build": "webpack --progress --watch",
+    "postinstall": "bower install && grunt build"
   },
   "babel": {
     "presets": [
