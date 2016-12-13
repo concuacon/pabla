@@ -21,8 +21,7 @@
     "start": "brunch watch --server",
     "prod": "brunch build --production",
     "test": "mocha --compilers js:babel-core/register --require ./test/test_helper.js  --recursive",
-    "test:watch": "npm run test -- --watch",
-    "postinstall": "webpack -p"
+    "build": "webpack --progress --watch"
   },
   "babel": {
     "presets": [
