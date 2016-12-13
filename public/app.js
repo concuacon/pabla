@@ -70835,7 +70835,7 @@ var UploadButton = _react2.default.createClass({
     this.setState({
       processing: true
     });
-
+    console.log(this.state.filename);
     var promise = _jquery2.default.ajax({
       url: 'public/upload',
       type: "POST",

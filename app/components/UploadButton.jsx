@@ -21,7 +21,7 @@ const UploadButton = React.createClass({
     this.setState({
       processing: true
     });
-
+    console.log(this.state.filename);
     const promise = $.ajax({
       url: 'public/upload',
       type: "POST",
