@@ -43,7 +43,7 @@ const config = {
         exclude: /node_modules/,
         query: {
           presets: ['es2015', 'react'],
-          plugins: ['syntax-object-rest-spread']
+          plugins: ['syntax-object-rest-spread','lodash']
         }
       },
       {

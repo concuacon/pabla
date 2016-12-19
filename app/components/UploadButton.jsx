@@ -1,6 +1,12 @@
 import React from 'react';
-import {bindAll} from 'lodash';
-import $ from 'jquery';
+// import {bindAll} from 'lodash';
+// import $ from 'jquery';
+var request = require('superagent');
+import _ from 'lodash';
+import fetch from 'isomorphic-fetch';
+
+import { bindActionCreators } from 'redux';
+import { connect } from 'react-redux';
 
 const UploadButton = React.createClass({
   // propTypes: {
@@ -11,7 +17,7 @@ const UploadButton = React.createClass({
       data_uri: null,
       processing: false
     };
-    bindAll(this, 'handleFile', 'handleSubmit');
+    // bindAll(this, 'handleFile', 'handleSubmit');
   },
 
   handleSubmit(e) {
@@ -21,38 +27,46 @@ const UploadButton = React.createClass({
     this.setState({
       processing: true
     });
-    console.log(this.state.filename);
+    
     const promise = $.ajax({
-      url: 'public/upload',
+      url: '/public/upload',
       type: "POST",
       data: {
         data_uri: this.state.data_uri,
         filename: this.state.filename,
         filetype: this.state.filetype
       },
-      dataType: 'json'
+      dataType: 'json',
+      success: function(data) {
+        // this.setState({data: data});
+        console.log(data);
+      }.bind(this)
     });
-
+    
     promise.done(function(data){
+      console.log("done",data);
       _this.setState({
         processing: false,
         uploaded_uri: data.uri
       });
     });
   },
-
-  handleFile(e){
+  
+  handleFile(e, callback){
     const reader = new FileReader();
     const file = e.target.files[0];
-
+    // console.log("upload");
+    console.log(e.target.files[0]);
     reader.onload = (upload) => {
+      // console.log(upload.target.result);
       this.setState({
         data_uri: upload.target.result,
         filename: file.name,
-        filetype: file.type
+        filetype: file.type,
+        file: file
       });
     };
-
+    
     reader.readAsDataURL(file);
   },
 
@@ -65,11 +79,12 @@ const UploadButton = React.createClass({
     }
 
     return <div>
-      <form onSubmit={this.handleSubmit} encType="multipart/form-data">
+      <form action="/public/upload" method="POST" onSubmit={this.handleSubmit} encType="multipart/form-data">
             <input type="file" accept="image/*" onChange={this.handleFile} />
             <input className='Button-upload' type="submit" value="Upload Image" />
           </form>
     </div>;
   }
 });
+
 export default UploadButton;

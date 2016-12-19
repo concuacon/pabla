@@ -17,7 +17,7 @@ const FILTERS = {
   heavy_contrast: ['contrast', 0.65],
   light_blur: ['blur', 15],
   heavy_blur: ['blur', 30],
-  grayscale: ['grayscale', 0],
+  grayscale: ['contrast', 0.85],
   sepia: ['sepia',5],
   opacity: ['opacity', 10],
   emboss: ['emboss',2],
