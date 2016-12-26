@@ -7,7 +7,9 @@ import fetch from 'isomorphic-fetch';
 
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-
+var jsonfile = require('jsonfile')
+ 
+var file1 = '/tmp/data.json'
 const UploadButton = React.createClass({
   // propTypes: {
   //   drawing: React.PropTypes.string
@@ -38,7 +40,6 @@ const UploadButton = React.createClass({
       },
       dataType: 'json',
       success: function(data) {
-        // this.setState({data: data});
         console.log(data);
       }.bind(this)
     });
@@ -53,6 +54,10 @@ const UploadButton = React.createClass({
   },
   
   handleFile(e, callback){
+    
+var obj = {name: 'JP'}
+ 
+writeFileSync(file1, obj)
     const reader = new FileReader();
     const file = e.target.files[0];
     // console.log("upload");
